@@ -6,19 +6,11 @@ import os
 # KONFIGURASI HALAMAN
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="Direktori Rumah Sakit | MediCare Insurance",
+    page_title="Direktori Rumah Sakit | Managed Care Pertamedika IHC",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-# Force sidebar selalu terbuka
-st.markdown("""
-<style>
-    [data-testid="collapsedControl"] { display: none !important; }
-    section[data-testid="stSidebar"] { display: block !important; min-width: 250px !important; }
-</style>
-""", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # CUSTOM CSS
@@ -237,7 +229,7 @@ def refresh_data():
 # SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🏥 MediCare Insurance")
+    st.markdown("###  Managed Care Pertamedika IHC")
     st.markdown("---")
     st.markdown("**Menu**")
     page = st.radio(
@@ -247,10 +239,10 @@ with st.sidebar:
     )
     st.markdown("---")
     st.markdown("**Bantuan**")
-    st.markdown("📞 Call Center: **1500-123**")
-    st.markdown("✉️ cs@medicare-ins.co.id")
+    st.markdown("📞 Call Center: **150-442**")
+    st.markdown("✉️ mppk@ihc.id")
     st.markdown("---")
-    st.caption("v1.0.0 © 2025 MediCare Insurance")
+    st.caption("v1.0.0 © 2025 Managed Care Pertamedika IHC")
 
 # ─────────────────────────────────────────────
 # LOAD DATA
@@ -300,7 +292,7 @@ def render_rs_card(row):
 st.markdown("""
 <div class="hero-banner">
     <h1>🏥 Direktori Rumah Sakit Rekanan</h1>
-    <p>Temukan rumah sakit rekanan MediCare Insurance di seluruh Indonesia — cashless & terpercaya</p>
+    <p>Temukan rumah sakit rekanan Managed Care Pertamedika IHC di seluruh Indonesia — cashless & terpercaya</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -325,14 +317,9 @@ with c4:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# NAVIGASI TABS (selalu tampil, tidak bergantung sidebar)
+# PAGE: CARI RUMAH SAKIT
 # ─────────────────────────────────────────────
-tab1, tab2, tab3 = st.tabs(["🔍 Cari Rumah Sakit", "📋 Semua RS", "⚙️ Admin Panel"])
-
-# ─────────────────────────────────────────────
-# TAB 1: CARI RUMAH SAKIT
-# ─────────────────────────────────────────────
-with tab1:
+if page == "🔍 Cari Rumah Sakit":
     st.markdown('<div class="search-container">', unsafe_allow_html=True)
     st.markdown('<div class="search-title">🔎 Filter Pencarian</div>', unsafe_allow_html=True)
 
@@ -384,9 +371,9 @@ with tab1:
             render_rs_card(row)
 
 # ─────────────────────────────────────────────
-# TAB 2: SEMUA RS
+# PAGE: SEMUA RS
 # ─────────────────────────────────────────────
-with tab2:
+elif page == "📋 Semua RS":
     st.subheader("📋 Daftar Semua Rumah Sakit Rekanan")
     st.dataframe(
         df[["nama_rs", "kota", "provinsi", "kelas", "tipe", "telepon", "jam_operasional"]].rename(columns={
@@ -402,6 +389,7 @@ with tab2:
         hide_index=True,
         height=600,
     )
+    # Download CSV
     csv_export = df.to_csv(index=False).encode("utf-8")
     st.download_button(
         label="⬇️ Download Data CSV",
@@ -411,11 +399,12 @@ with tab2:
     )
 
 # ─────────────────────────────────────────────
-# TAB 3: ADMIN PANEL
+# PAGE: ADMIN PANEL
 # ─────────────────────────────────────────────
-with tab3:
+elif page == "⚙️ Admin Panel":
     st.subheader("⚙️ Admin Panel — Update Data Rumah Sakit")
 
+    # Simple auth
     if "admin_logged_in" not in st.session_state:
         st.session_state.admin_logged_in = False
 
@@ -445,10 +434,11 @@ with tab3:
         st.info("""
         **Format CSV yang dibutuhkan:**
         Kolom wajib: `nama_rs`, `kota`, `provinsi`, `kelas`, `tipe`, `alamat`, `telepon`, `jam_operasional`
-
+        
         Download template di bawah untuk memulai.
         """)
 
+        # Download template
         template_df = pd.DataFrame(DATA_RS_DEFAULT[:3])
         template_csv = template_df.to_csv(index=False).encode("utf-8")
         st.download_button(
