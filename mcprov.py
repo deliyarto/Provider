@@ -461,19 +461,31 @@ with tab3:
         uploaded = st.file_uploader("Upload file CSV baru:", type=["csv"])
         if uploaded:
             try:
-                new_df = pd.read_csv(uploaded)
-                required = ["nama_rs", "kota", "provinsi", "kelas", "tipe"]
-                missing = [c for c in required if c not in new_df.columns]
-                if missing:
-                    st.error(f"Kolom wajib tidak ditemukan: {', '.join(missing)}")
+                # Coba baca dengan berbagai encoding (utf-8, latin-1, windows-1252)
+                raw = uploaded.read()
+                new_df = None
+                for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
+                    try:
+                        import io
+                        new_df = pd.read_csv(io.BytesIO(raw), encoding=enc)
+                        break
+                    except (UnicodeDecodeError, Exception):
+                        continue
+                if new_df is None:
+                    st.error("❌ File tidak bisa dibaca. Pastikan file CSV valid.")
                 else:
-                    st.success(f"✅ File valid — {len(new_df)} data RS ditemukan")
-                    st.dataframe(new_df.head(5), use_container_width=True)
-                    if st.button("💾 Simpan & Terapkan Data Baru", type="primary"):
-                        new_df.to_csv(CSV_PATH, index=False)
-                        refresh_data()
-                        st.success(f"✅ Data berhasil diperbarui! {len(new_df)} RS tersimpan.")
-                        st.rerun()
+                    required = ["nama_rs", "kota", "provinsi", "kelas", "tipe"]
+                    missing = [c for c in required if c not in new_df.columns]
+                    if missing:
+                        st.error(f"Kolom wajib tidak ditemukan: {', '.join(missing)}")
+                    else:
+                        st.success(f"✅ File valid — {len(new_df)} data RS ditemukan")
+                        st.dataframe(new_df.head(5), use_container_width=True)
+                        if st.button("💾 Simpan & Terapkan Data Baru", type="primary"):
+                            new_df.to_csv(CSV_PATH, index=False, encoding="utf-8")
+                            refresh_data()
+                            st.success(f"✅ Data berhasil diperbarui! {len(new_df)} RS tersimpan.")
+                            st.rerun()
             except Exception as e:
                 st.error(f"Error membaca file: {e}")
 
