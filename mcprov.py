@@ -327,7 +327,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ─────────────────────────────────────────────
 # NAVIGASI TABS (selalu tampil, tidak bergantung sidebar)
 # ─────────────────────────────────────────────
-tab1, tab2, tab3 = st.tabs(["🔍 Cari Rumah Sakit", "📋 Semua RS", "⚙️ Admin Panel"])
+tab2, tab1, tab3 = st.tabs(["📋 Semua RS","🔍 Cari Rumah Sakit",  "⚙️ Admin Panel"])
 
 # ─────────────────────────────────────────────
 # TAB 1: CARI RUMAH SAKIT
