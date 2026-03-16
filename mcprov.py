@@ -6,7 +6,7 @@ import os
 # KONFIGURASI HALAMAN
 # ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="Direktori Rumah Sakit | MediCare Insurance",
+    page_title="Direktori Rumah Sakit | Managed Care Pertamedika IHC",
     page_icon="🏥",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -237,7 +237,7 @@ def refresh_data():
 # SIDEBAR
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🏥 MediCare Insurance")
+    st.markdown("### 🏥 Managed Care Pertamedika IHC")
     st.markdown("---")
     st.markdown("**Menu**")
     page = st.radio(
@@ -250,7 +250,7 @@ with st.sidebar:
     st.markdown("📞 Call Center: **1500-123**")
     st.markdown("✉️ cs@medicare-ins.co.id")
     st.markdown("---")
-    st.caption("v1.0.0 © 2025 MediCare Insurance")
+    st.caption("v1.0.0 © 2025 Managed Care Pertamedika IHC")
 
 # ─────────────────────────────────────────────
 # LOAD DATA
@@ -300,7 +300,7 @@ def render_rs_card(row):
 st.markdown("""
 <div class="hero-banner">
     <h1>🏥 Direktori Rumah Sakit Rekanan</h1>
-    <p>Temukan rumah sakit rekanan MediCare Insurance di seluruh Indonesia — cashless & terpercaya</p>
+    <p>Temukan rumah sakit rekanan Managed Care Pertamedika IHC di seluruh Indonesia — cashless & terpercaya</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -334,40 +334,21 @@ tab1, tab2, tab3 = st.tabs(["🔍 Cari Rumah Sakit", "📋 Semua RS", "⚙️ Ad
 # ─────────────────────────────────────────────
 with tab1:
     st.markdown('<div class="search-container">', unsafe_allow_html=True)
-    st.markdown('<div class="search-title">🔎 Filter Pencarian</div>', unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns([3, 3, 2])
-    with col1:
-        keyword = st.text_input("Nama Rumah Sakit", placeholder="Contoh: Siloam, Hermina...")
-    with col2:
-        kota_options = ["Semua Kota"] + sorted(df["kota"].dropna().unique().tolist())
-        kota_filter = st.selectbox("Kota", kota_options)
-    with col3:
-        provinsi_options = ["Semua Provinsi"] + sorted(df["provinsi"].dropna().unique().tolist())
-        provinsi_filter = st.selectbox("Provinsi", provinsi_options)
-
-    col4, col5 = st.columns([2, 4])
-    with col4:
-        kelas_options = ["Semua Kelas"] + sorted(df["kelas"].dropna().unique().tolist())
-        kelas_filter = st.selectbox("Kelas RS", kelas_options)
-    with col5:
-        tipe_options = ["Semua Tipe", "Pemerintah", "Swasta"]
-        tipe_filter = st.selectbox("Tipe RS", tipe_options)
-
+    st.markdown('<div class="search-title">🔎 Cari Rumah Sakit</div>', unsafe_allow_html=True)
+    keyword = st.text_input(
+        "",
+        placeholder="Ketik nama RS, kota, provinsi, kelas, atau tipe... (contoh: RS Pusat Pertamina, Bandung, Swasta, Kelas A)",
+        label_visibility="collapsed"
+    )
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # Apply filters
+    # Cari di semua kolom sekaligus
     result = df.copy()
     if keyword:
-        result = result[result["nama_rs"].str.contains(keyword, case=False, na=False)]
-    if kota_filter != "Semua Kota":
-        result = result[result["kota"] == kota_filter]
-    if provinsi_filter != "Semua Provinsi":
-        result = result[result["provinsi"] == provinsi_filter]
-    if kelas_filter != "Semua Kelas":
-        result = result[result["kelas"].str.strip().str.upper() == kelas_filter.strip().upper()]
-    if tipe_filter != "Semua Tipe":
-        result = result[result["tipe"].str.strip().str.lower() == tipe_filter.strip().lower()]
+        mask = df.apply(
+            lambda col: col.astype(str).str.contains(keyword, case=False, na=False)
+        ).any(axis=1)
+        result = df[mask]
 
     st.markdown(f"**Menampilkan {len(result)} dari {total_rs} rumah sakit**")
     st.markdown("---")
@@ -376,7 +357,7 @@ with tab1:
         st.markdown("""
         <div class="no-result">
             <div class="no-result-icon">🔍</div>
-            <div class="no-result-text">Rumah sakit tidak ditemukan.<br>Coba ubah kata kunci atau filter pencarian.</div>
+            <div class="no-result-text">Rumah sakit tidak ditemukan.<br>Coba kata kunci lain.</div>
         </div>
         """, unsafe_allow_html=True)
     else:
