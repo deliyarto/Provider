@@ -176,7 +176,7 @@ st.markdown("""
 # KOLOM TEMPLATE CSV
 # ─────────────────────────────────────────────
 TEMPLATE_COLS = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "telepon", "jam_operasional"]
-CSV_PATH = "data_rumah_sakit.csv"
+CSV_PATH = "template_data_rs.csv"
 
 # ─────────────────────────────────────────────
 # FUNGSI LOAD DATA — hanya dari CSV, tidak ada hardcode
