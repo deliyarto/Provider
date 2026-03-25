@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import io
 
 # ─────────────────────────────────────────────
 # KONFIGURASI HALAMAN
@@ -31,12 +32,10 @@ st.markdown("""
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* Background */
     .stApp {
         background: linear-gradient(135deg, #f0f4ff 0%, #fafaff 50%, #f0f8ff 100%);
     }
 
-    /* Header banner */
     .hero-banner {
         background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 60%, #0ea5e9 100%);
         border-radius: 16px;
@@ -57,7 +56,6 @@ st.markdown("""
         margin: 0;
     }
 
-    /* Stats row */
     .stat-card {
         background: white;
         border-radius: 12px;
@@ -81,7 +79,6 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
 
-    /* Search box */
     .search-container {
         background: white;
         border-radius: 14px;
@@ -99,7 +96,6 @@ st.markdown("""
         margin-bottom: 14px;
     }
 
-    /* RS Card */
     .rs-card {
         background: white;
         border-radius: 12px;
@@ -147,7 +143,6 @@ st.markdown("""
     .badge-d { background: #fee2e2; color: #b91c1c; }
     .badge-utama { background: #f3e8ff; color: #7c3aed; }
 
-    /* Admin panel */
     .admin-box {
         background: #fff7ed;
         border: 1px solid #fed7aa;
@@ -156,7 +151,6 @@ st.markdown("""
         margin-top: 8px;
     }
 
-    /* No result */
     .no-result {
         text-align: center;
         padding: 48px 24px;
@@ -165,7 +159,6 @@ st.markdown("""
     .no-result-icon { font-size: 3rem; }
     .no-result-text { font-size: 1rem; font-weight: 500; margin-top: 12px; }
 
-    /* Sidebar */
     .css-1d391kg, [data-testid="stSidebar"] {
         background: #1a3a6b !important;
     }
@@ -173,7 +166,6 @@ st.markdown("""
         color: white !important;
     }
 
-    /* Hide streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
@@ -181,54 +173,23 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# DATA RUMAH SAKIT (HARDCODED - bisa ganti via CSV)
+# KOLOM TEMPLATE CSV
 # ─────────────────────────────────────────────
-DATA_RS_DEFAULT = [
-    {"nama_rs": "RS Cipto Mangunkusumo", "kota": "Jakarta Pusat", "provinsi": "DKI Jakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Diponegoro No.71", "telepon": "(021) 500135", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Fatmawati", "kota": "Jakarta Selatan", "provinsi": "DKI Jakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. TB Simatupang No.1", "telepon": "(021) 7660552", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Persahabatan", "kota": "Jakarta Timur", "provinsi": "DKI Jakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Persahabatan Raya No.1", "telepon": "(021) 4891708", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Premier Bintaro", "kota": "Tangerang Selatan", "provinsi": "Banten", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. MH Thamrin No.1", "telepon": "(021) 27519999", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Hermina Depok", "kota": "Depok", "provinsi": "Jawa Barat", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Raya Siliwangi No.50", "telepon": "(021) 7720689", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Hasan Sadikin", "kota": "Bandung", "provinsi": "Jawa Barat", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Pasteur No.38", "telepon": "(022) 2034953", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Borromeus", "kota": "Bandung", "provinsi": "Jawa Barat", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Ir. H. Juanda No.100", "telepon": "(022) 2552001", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Santosa Hospital Bandung Central", "kota": "Bandung", "provinsi": "Jawa Barat", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Kebonjati No.38", "telepon": "(022) 4248333", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Dr. Kariadi", "kota": "Semarang", "provinsi": "Jawa Tengah", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Dr. Sutomo No.16", "telepon": "(024) 8413476", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Telogorejo", "kota": "Semarang", "provinsi": "Jawa Tengah", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. KH Ahmad Dahlan No.3", "telepon": "(024) 8452575", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Dr. Soetomo", "kota": "Surabaya", "provinsi": "Jawa Timur", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Mayjen Prof. Dr. Moestopo No.6", "telepon": "(031) 5501078", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Siloam Surabaya", "kota": "Surabaya", "provinsi": "Jawa Timur", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Raya Gubeng No.70", "telepon": "(031) 5031111", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Universitas Airlangga", "kota": "Surabaya", "provinsi": "Jawa Timur", "kelas": "B", "tipe": "Pemerintah", "alamat": "Jl. Mayjen Prof. Dr. Moestopo No.47", "telepon": "(031) 5020082", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Sanglah", "kota": "Denpasar", "provinsi": "Bali", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Diponegoro No.1", "telepon": "(0361) 227911", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Kasih Ibu Denpasar", "kota": "Denpasar", "provinsi": "Bali", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Teuku Umar No.120", "telepon": "(0361) 223036", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Dr. Wahidin Sudirohusodo", "kota": "Makassar", "provinsi": "Sulawesi Selatan", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Perintis Kemerdekaan Km.11", "telepon": "(0411) 584677", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Siloam Makassar", "kota": "Makassar", "provinsi": "Sulawesi Selatan", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Metro Tanjung Bunga", "telepon": "(0411) 3655555", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Adam Malik", "kota": "Medan", "provinsi": "Sumatera Utara", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Bunga Lau No.17", "telepon": "(061) 8360381", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Columbia Asia Medan", "kota": "Medan", "provinsi": "Sumatera Utara", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Listrik No.2A", "telepon": "(061) 4566368", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Dr. M. Djamil", "kota": "Padang", "provinsi": "Sumatera Barat", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Perintis Kemerdekaan No.1", "telepon": "(0751) 32371", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Siloam Palembang", "kota": "Palembang", "provinsi": "Sumatera Selatan", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Rajawali No.8", "telepon": "(0711) 376767", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Abdul Moeloek", "kota": "Bandar Lampung", "provinsi": "Lampung", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Dr. Rivai No.6", "telepon": "(0721) 703312", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Ulin Banjarmasin", "kota": "Banjarmasin", "provinsi": "Kalimantan Selatan", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. A. Yani Km.2.5", "telepon": "(0511) 3252180", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Siloam Balikpapan", "kota": "Balikpapan", "provinsi": "Kalimantan Timur", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. MT Haryono No.165", "telepon": "(0542) 888888", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Panti Rapih", "kota": "Yogyakarta", "provinsi": "DI Yogyakarta", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Cik Di Tiro No.30", "telepon": "(0274) 514845", "jam_operasional": "24 Jam"},
-    {"nama_rs": "RS Dr. Sardjito", "kota": "Yogyakarta", "provinsi": "DI Yogyakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Kesehatan No.1", "telepon": "(0274) 587333", "jam_operasional": "24 Jam"},
-]
-
+TEMPLATE_COLS = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "telepon", "jam_operasional"]
 CSV_PATH = "data_rumah_sakit.csv"
 
 # ─────────────────────────────────────────────
-# FUNGSI LOAD DATA
+# FUNGSI LOAD DATA — hanya dari CSV, tidak ada hardcode
 # ─────────────────────────────────────────────
 @st.cache_data
 def load_data():
     if os.path.exists(CSV_PATH):
         df = pd.read_csv(CSV_PATH)
-    else:
-        df = pd.DataFrame(DATA_RS_DEFAULT)
-    # Normalisasi kolom
-    required_cols = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "telepon", "jam_operasional"]
-    for col in required_cols:
-        if col not in df.columns:
-            df[col] = "-"
-    return df
+        for col in TEMPLATE_COLS:
+            if col not in df.columns:
+                df[col] = "-"
+        return df
+    return None  # belum ada CSV
 
 def refresh_data():
     st.cache_data.clear()
@@ -238,13 +199,6 @@ def refresh_data():
 # ─────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### 🏥 Managed Care Pertamedika IHC")
-    st.markdown("---")
-    st.markdown("**Menu**")
-    page = st.radio(
-        "",
-        ["🔍 Cari Rumah Sakit", "📋 Semua RS", "⚙️ Admin Panel"],
-        label_visibility="collapsed"
-    )
     st.markdown("---")
     st.markdown("**Bantuan**")
     st.markdown("📞 Call Center: **1500-123**")
@@ -258,7 +212,7 @@ with st.sidebar:
 df = load_data()
 
 # ─────────────────────────────────────────────
-# HELPER: Badge Kelas
+# HELPER: Badge
 # ─────────────────────────────────────────────
 def badge_kelas(kelas):
     kelas = str(kelas).strip().upper()
@@ -305,91 +259,97 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# STATS
+# STATS — hanya tampil jika data ada
 # ─────────────────────────────────────────────
-total_rs = len(df)
-total_kota = df["kota"].nunique()
-total_provinsi = df["provinsi"].nunique()
-total_kelas_a = len(df[df["kelas"].str.strip().str.upper() == "A"])
+if df is not None:
+    total_rs = len(df)
+    total_kota = df["kota"].nunique()
+    total_provinsi = df["provinsi"].nunique()
+    total_kelas_a = len(df[df["kelas"].str.strip().str.upper() == "A"])
 
-c1, c2, c3, c4 = st.columns(4)
-with c1:
-    st.markdown(f'<div class="stat-card"><div class="stat-number">{total_rs}</div><div class="stat-label">Total RS Rekanan</div></div>', unsafe_allow_html=True)
-with c2:
-    st.markdown(f'<div class="stat-card"><div class="stat-number">{total_kota}</div><div class="stat-label">Kota Terjangkau</div></div>', unsafe_allow_html=True)
-with c3:
-    st.markdown(f'<div class="stat-card"><div class="stat-number">{total_provinsi}</div><div class="stat-label">Provinsi</div></div>', unsafe_allow_html=True)
-with c4:
-    st.markdown(f'<div class="stat-card"><div class="stat-number">{total_kelas_a}</div><div class="stat-label">RS Kelas A</div></div>', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(f'<div class="stat-card"><div class="stat-number">{total_rs}</div><div class="stat-label">Total RS Rekanan</div></div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown(f'<div class="stat-card"><div class="stat-number">{total_kota}</div><div class="stat-label">Kota Terjangkau</div></div>', unsafe_allow_html=True)
+    with c3:
+        st.markdown(f'<div class="stat-card"><div class="stat-number">{total_provinsi}</div><div class="stat-label">Provinsi</div></div>', unsafe_allow_html=True)
+    with c4:
+        st.markdown(f'<div class="stat-card"><div class="stat-number">{total_kelas_a}</div><div class="stat-label">RS Kelas A</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# NAVIGASI TABS (selalu tampil, tidak bergantung sidebar)
+# NAVIGASI TABS
 # ─────────────────────────────────────────────
-tab2, tab1, tab3 = st.tabs(["📋 Semua RS","🔍 Cari Rumah Sakit",  "⚙️ Admin Panel"])
+tab2, tab1, tab3 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit", "⚙️ Admin Panel"])
 
 # ─────────────────────────────────────────────
 # TAB 1: CARI RUMAH SAKIT
 # ─────────────────────────────────────────────
 with tab1:
-    st.markdown('<div class="search-container">', unsafe_allow_html=True)
-    st.markdown('<div class="search-title">🔎 Cari Rumah Sakit</div>', unsafe_allow_html=True)
-    keyword = st.text_input(
-        "",
-        placeholder="Ketik nama RS, kota, provinsi, kelas, atau tipe... (contoh: RS Pusat Pertamina, Bandung, Swasta, Kelas A)",
-        label_visibility="collapsed"
-    )
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Cari di semua kolom sekaligus
-    result = df.copy()
-    if keyword:
-        mask = df.apply(
-            lambda col: col.astype(str).str.contains(keyword, case=False, na=False)
-        ).any(axis=1)
-        result = df[mask]
-
-    st.markdown(f"**Menampilkan {len(result)} dari {total_rs} rumah sakit**")
-    st.markdown("---")
-
-    if len(result) == 0:
-        st.markdown("""
-        <div class="no-result">
-            <div class="no-result-icon">🔍</div>
-            <div class="no-result-text">Rumah sakit tidak ditemukan.<br>Coba kata kunci lain.</div>
-        </div>
-        """, unsafe_allow_html=True)
+    if df is None:
+        st.warning("⚠️ Data rumah sakit belum tersedia. Silakan upload file CSV melalui tab **⚙️ Admin Panel**.")
     else:
-        for _, row in result.iterrows():
-            render_rs_card(row)
+        st.markdown('<div class="search-container">', unsafe_allow_html=True)
+        st.markdown('<div class="search-title">🔎 Cari Rumah Sakit</div>', unsafe_allow_html=True)
+        keyword = st.text_input(
+            "",
+            placeholder="Ketik nama RS, kota, provinsi, kelas, atau tipe... (contoh: RS Pusat Pertamina, Bandung, Swasta, Kelas A)",
+            label_visibility="collapsed"
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        result = df.copy()
+        if keyword:
+            mask = df.apply(
+                lambda col: col.astype(str).str.contains(keyword, case=False, na=False)
+            ).any(axis=1)
+            result = df[mask]
+
+        st.markdown(f"**Menampilkan {len(result)} dari {total_rs} rumah sakit**")
+        st.markdown("---")
+
+        if len(result) == 0:
+            st.markdown("""
+            <div class="no-result">
+                <div class="no-result-icon">🔍</div>
+                <div class="no-result-text">Rumah sakit tidak ditemukan.<br>Coba kata kunci lain.</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            for _, row in result.iterrows():
+                render_rs_card(row)
 
 # ─────────────────────────────────────────────
 # TAB 2: SEMUA RS
 # ─────────────────────────────────────────────
 with tab2:
-    st.subheader("📋 Daftar Semua Rumah Sakit Rekanan")
-    st.dataframe(
-        df[["nama_rs", "kota", "provinsi", "kelas", "tipe", "telepon", "jam_operasional"]].rename(columns={
-            "nama_rs": "Nama RS",
-            "kota": "Kota",
-            "provinsi": "Provinsi",
-            "kelas": "Kelas",
-            "tipe": "Tipe",
-            "telepon": "Telepon",
-            "jam_operasional": "Jam Operasional",
-        }),
-        use_container_width=True,
-        hide_index=True,
-        height=600,
-    )
-    csv_export = df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        label="⬇️ Download Data CSV",
-        data=csv_export,
-        file_name="data_rumah_sakit_rekanan.csv",
-        mime="text/csv",
-    )
+    if df is None:
+        st.warning("⚠️ Data rumah sakit belum tersedia. Silakan upload file CSV melalui tab **⚙️ Admin Panel**.")
+    else:
+        st.subheader("📋 Daftar Semua Rumah Sakit Rekanan")
+        st.dataframe(
+            df[["nama_rs", "kota", "provinsi", "kelas", "tipe", "telepon", "jam_operasional"]].rename(columns={
+                "nama_rs": "Nama RS",
+                "kota": "Kota",
+                "provinsi": "Provinsi",
+                "kelas": "Kelas",
+                "tipe": "Tipe",
+                "telepon": "Telepon",
+                "jam_operasional": "Jam Operasional",
+            }),
+            use_container_width=True,
+            hide_index=True,
+            height=600,
+        )
+        csv_export = df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Download Data CSV",
+            data=csv_export,
+            file_name="data_rumah_sakit_rekanan.csv",
+            mime="text/csv",
+        )
 
 # ─────────────────────────────────────────────
 # TAB 3: ADMIN PANEL
@@ -421,7 +381,13 @@ with tab3:
             st.session_state.admin_logged_in = False
             st.rerun()
 
+        # Status data saat ini
         st.markdown("---")
+        if df is None:
+            st.error("❌ Belum ada data — silakan upload file CSV.")
+        else:
+            st.info(f"📊 Data aktif: **{len(df)} rumah sakit** dari file `{CSV_PATH}`")
+
         st.markdown("### 📤 Upload File CSV Baru")
         st.info("""
         **Format CSV yang dibutuhkan:**
@@ -430,8 +396,18 @@ with tab3:
         Download template di bawah untuk memulai.
         """)
 
-        template_df = pd.DataFrame(DATA_RS_DEFAULT[:3])
-        template_csv = template_df.to_csv(index=False).encode("utf-8")
+        # Template CSV kosong dengan 1 baris contoh
+        template_data = [{
+            "nama_rs": "RS Contoh",
+            "kota": "Jakarta Pusat",
+            "provinsi": "DKI Jakarta",
+            "kelas": "A",
+            "tipe": "Pemerintah",
+            "alamat": "Jl. Contoh No.1",
+            "telepon": "(021) 000000",
+            "jam_operasional": "24 Jam"
+        }]
+        template_csv = pd.DataFrame(template_data).to_csv(index=False).encode("utf-8")
         st.download_button(
             label="⬇️ Download Template CSV",
             data=template_csv,
@@ -442,12 +418,10 @@ with tab3:
         uploaded = st.file_uploader("Upload file CSV baru:", type=["csv"])
         if uploaded:
             try:
-                # Coba baca dengan berbagai encoding (utf-8, latin-1, windows-1252)
                 raw = uploaded.read()
                 new_df = None
                 for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
                     try:
-                        import io
                         new_df = pd.read_csv(io.BytesIO(raw), encoding=enc)
                         break
                     except (UnicodeDecodeError, Exception):
@@ -458,7 +432,7 @@ with tab3:
                     required = ["nama_rs", "kota", "provinsi", "kelas", "tipe"]
                     missing = [c for c in required if c not in new_df.columns]
                     if missing:
-                        st.error(f"Kolom wajib tidak ditemukan: {', '.join(missing)}")
+                        st.error(f"❌ Kolom wajib tidak ditemukan: {', '.join(missing)}")
                     else:
                         st.success(f"✅ File valid — {len(new_df)} data RS ditemukan")
                         st.dataframe(new_df.head(5), use_container_width=True)
@@ -470,11 +444,13 @@ with tab3:
             except Exception as e:
                 st.error(f"Error membaca file: {e}")
 
-        st.markdown("---")
-        st.markdown("### 🗑️ Reset ke Data Default")
-        if st.button("Reset ke Data Hardcode Default", type="secondary"):
-            if os.path.exists(CSV_PATH):
-                os.remove(CSV_PATH)
-            refresh_data()
-            st.success("✅ Data berhasil direset ke default.")
-            st.rerun()
+        if df is not None:
+            st.markdown("---")
+            st.markdown("### 🗑️ Hapus Data")
+            st.warning("Menghapus data akan mengosongkan direktori RS hingga CSV baru diupload.")
+            if st.button("🗑️ Hapus Semua Data RS", type="secondary"):
+                if os.path.exists(CSV_PATH):
+                    os.remove(CSV_PATH)
+                refresh_data()
+                st.success("✅ Data berhasil dihapus.")
+                st.rerun()
