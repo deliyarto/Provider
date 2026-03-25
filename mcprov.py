@@ -178,18 +178,44 @@ st.markdown("""
 TEMPLATE_COLS = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "telepon", "jam_operasional"]
 CSV_PATH = "template_data_rs.csv"
 
+# ⬇️ Ganti dengan URL raw GitHub CSV Anda
+# Format: https://raw.githubusercontent.com/USERNAME/REPO/main/NAMA_FILE.csv
+GITHUB_CSV_URL = "https://raw.githubusercontent.com/deliyarto/Provider/main/template_data_rs.csv"
+
 # ─────────────────────────────────────────────
-# FUNGSI LOAD DATA — hanya dari CSV, tidak ada hardcode
+# FUNGSI LOAD DATA — prioritas: GitHub → lokal
 # ─────────────────────────────────────────────
-@st.cache_data
+@st.cache_data(ttl=300)  # cache 5 menit, lalu fetch ulang dari GitHub
 def load_data():
+    # 1. Coba ambil dari GitHub (selalu up-to-date)
+    try:
+        import urllib.request
+        with urllib.request.urlopen(GITHUB_CSV_URL, timeout=10) as response:
+            raw = response.read()
+        for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
+            try:
+                df = pd.read_csv(io.BytesIO(raw), encoding=enc)
+                for col in TEMPLATE_COLS:
+                    if col not in df.columns:
+                        df[col] = "-"
+                return df
+            except (UnicodeDecodeError, Exception):
+                continue
+    except Exception:
+        pass
+
+    # 2. Fallback: baca dari file lokal (hasil upload via Admin Panel)
     if os.path.exists(CSV_PATH):
-        df = pd.read_csv(CSV_PATH)
-        for col in TEMPLATE_COLS:
-            if col not in df.columns:
-                df[col] = "-"
-        return df
-    return None  # belum ada CSV
+        try:
+            df = pd.read_csv(CSV_PATH)
+            for col in TEMPLATE_COLS:
+                if col not in df.columns:
+                    df[col] = "-"
+            return df
+        except Exception:
+            pass
+
+    return None  # tidak ada data sama sekali
 
 def refresh_data():
     st.cache_data.clear()
@@ -384,9 +410,11 @@ with tab3:
         # Status data saat ini
         st.markdown("---")
         if df is None:
-            st.error("❌ Belum ada data — silakan upload file CSV.")
+            st.error("❌ Belum ada data — pastikan file CSV ada di GitHub atau upload manual.")
         else:
-            st.info(f"📊 Data aktif: **{len(df)} rumah sakit** dari file `{CSV_PATH}`")
+            st.info(f"📊 Data aktif: **{len(df)} rumah sakit**")
+            st.caption(f"🔗 Sumber utama: `{GITHUB_CSV_URL}`")
+            st.caption(f"💾 Fallback lokal: `{CSV_PATH}`")
 
         st.markdown("### 📤 Upload File CSV Baru")
         st.info("""
