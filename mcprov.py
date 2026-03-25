@@ -179,13 +179,44 @@ TEMPLATE_COLS = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "tele
 CSV_PATH = "template_data_rs.csv"
 
 # ⬇️ Ganti dengan URL raw GitHub CSV Anda
-# Format: https://raw.githubusercontent.com/USERNAME/REPO/main/NAMA_FILE.csv
 GITHUB_CSV_URL = "https://raw.githubusercontent.com/deliyarto/Provider/main/template_data_rs.csv"
 
 # ─────────────────────────────────────────────
-# FUNGSI LOAD DATA — prioritas: GitHub → lokal
+# DATA HARDCODE — fallback jika GitHub & CSV tidak tersedia
 # ─────────────────────────────────────────────
-@st.cache_data(ttl=300)  # cache 5 menit, lalu fetch ulang dari GitHub
+DATA_RS_DEFAULT = [
+    {"nama_rs": "RS Cipto Mangunkusumo", "kota": "Jakarta Pusat", "provinsi": "DKI Jakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Diponegoro No.71", "telepon": "(021) 500135", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Fatmawati", "kota": "Jakarta Selatan", "provinsi": "DKI Jakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. TB Simatupang No.1", "telepon": "(021) 7660552", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Persahabatan", "kota": "Jakarta Timur", "provinsi": "DKI Jakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Persahabatan Raya No.1", "telepon": "(021) 4891708", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Premier Bintaro", "kota": "Tangerang Selatan", "provinsi": "Banten", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. MH Thamrin No.1", "telepon": "(021) 27519999", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Hermina Depok", "kota": "Depok", "provinsi": "Jawa Barat", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Raya Siliwangi No.50", "telepon": "(021) 7720689", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Hasan Sadikin", "kota": "Bandung", "provinsi": "Jawa Barat", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Pasteur No.38", "telepon": "(022) 2034953", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Borromeus", "kota": "Bandung", "provinsi": "Jawa Barat", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Ir. H. Juanda No.100", "telepon": "(022) 2552001", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Santosa Hospital Bandung Central", "kota": "Bandung", "provinsi": "Jawa Barat", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Kebonjati No.38", "telepon": "(022) 4248333", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Dr. Kariadi", "kota": "Semarang", "provinsi": "Jawa Tengah", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Dr. Sutomo No.16", "telepon": "(024) 8413476", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Telogorejo", "kota": "Semarang", "provinsi": "Jawa Tengah", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. KH Ahmad Dahlan No.3", "telepon": "(024) 8452575", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Dr. Soetomo", "kota": "Surabaya", "provinsi": "Jawa Timur", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Mayjen Prof. Dr. Moestopo No.6", "telepon": "(031) 5501078", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Siloam Surabaya", "kota": "Surabaya", "provinsi": "Jawa Timur", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Raya Gubeng No.70", "telepon": "(031) 5031111", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Universitas Airlangga", "kota": "Surabaya", "provinsi": "Jawa Timur", "kelas": "B", "tipe": "Pemerintah", "alamat": "Jl. Mayjen Prof. Dr. Moestopo No.47", "telepon": "(031) 5020082", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Sanglah", "kota": "Denpasar", "provinsi": "Bali", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Diponegoro No.1", "telepon": "(0361) 227911", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Kasih Ibu Denpasar", "kota": "Denpasar", "provinsi": "Bali", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Teuku Umar No.120", "telepon": "(0361) 223036", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Dr. Wahidin Sudirohusodo", "kota": "Makassar", "provinsi": "Sulawesi Selatan", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Perintis Kemerdekaan Km.11", "telepon": "(0411) 584677", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Siloam Makassar", "kota": "Makassar", "provinsi": "Sulawesi Selatan", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Metro Tanjung Bunga", "telepon": "(0411) 3655555", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Adam Malik", "kota": "Medan", "provinsi": "Sumatera Utara", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Bunga Lau No.17", "telepon": "(061) 8360381", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Columbia Asia Medan", "kota": "Medan", "provinsi": "Sumatera Utara", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Listrik No.2A", "telepon": "(061) 4566368", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Dr. M. Djamil", "kota": "Padang", "provinsi": "Sumatera Barat", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Perintis Kemerdekaan No.1", "telepon": "(0751) 32371", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Siloam Palembang", "kota": "Palembang", "provinsi": "Sumatera Selatan", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Rajawali No.8", "telepon": "(0711) 376767", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Abdul Moeloek", "kota": "Bandar Lampung", "provinsi": "Lampung", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Dr. Rivai No.6", "telepon": "(0721) 703312", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Ulin Banjarmasin", "kota": "Banjarmasin", "provinsi": "Kalimantan Selatan", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. A. Yani Km.2.5", "telepon": "(0511) 3252180", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Siloam Balikpapan", "kota": "Balikpapan", "provinsi": "Kalimantan Timur", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. MT Haryono No.165", "telepon": "(0542) 888888", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Panti Rapih", "kota": "Yogyakarta", "provinsi": "DI Yogyakarta", "kelas": "B", "tipe": "Swasta", "alamat": "Jl. Cik Di Tiro No.30", "telepon": "(0274) 514845", "jam_operasional": "24 Jam"},
+    {"nama_rs": "RS Dr. Sardjito", "kota": "Yogyakarta", "provinsi": "DI Yogyakarta", "kelas": "A", "tipe": "Pemerintah", "alamat": "Jl. Kesehatan No.1", "telepon": "(0274) 587333", "jam_operasional": "24 Jam"},
+]
+
+# ─────────────────────────────────────────────
+# FUNGSI LOAD DATA — prioritas: GitHub → lokal → hardcode
+# ─────────────────────────────────────────────
+@st.cache_data(ttl=300)
 def load_data():
     # 1. Coba ambil dari GitHub (selalu up-to-date)
     try:
@@ -204,7 +235,7 @@ def load_data():
     except Exception:
         pass
 
-    # 2. Fallback: baca dari file lokal (hasil upload via Admin Panel)
+    # 2. Fallback: baca dari file lokal
     if os.path.exists(CSV_PATH):
         try:
             df = pd.read_csv(CSV_PATH)
@@ -215,7 +246,8 @@ def load_data():
         except Exception:
             pass
 
-    return None  # tidak ada data sama sekali
+    # 3. Fallback terakhir: data hardcode
+    return pd.DataFrame(DATA_RS_DEFAULT)
 
 def refresh_data():
     st.cache_data.clear()
