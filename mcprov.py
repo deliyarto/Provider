@@ -216,6 +216,7 @@ DATA_RS_DEFAULT = [
 # ─────────────────────────────────────────────
 # FUNGSI LOAD DATA — prioritas: GitHub → lokal → hardcode
 # ─────────────────────────────────────────────
+@st.cache_data(ttl=60)
 def load_data():
     # 1. Selalu fetch dari GitHub (update otomatis saat CSV di-commit)
     try:
