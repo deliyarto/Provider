@@ -217,7 +217,6 @@ DATA_RS_DEFAULT = [
 # FUNGSI LOAD DATA — prioritas: GitHub → lokal → hardcode
 # ─────────────────────────────────────────────
 def load_data():
-    # 1. Baca dari file CSV lokal (hasil upload Admin Panel)
     if os.path.exists(CSV_PATH):
         try:
             df = pd.read_csv(CSV_PATH)
@@ -227,13 +226,10 @@ def load_data():
             return df
         except Exception:
             pass
-
-    # 2. Fallback: data hardcode
-    return pd.DataFrame(DATA_RS_DEFAULT)
+    return None  # CSV tidak ada / gagal dibaca
 
 def refresh_data():
-    pass  # tidak diperlukan karena tidak ada cache
-
+    pass
 # ─────────────────────────────────────────────
 # SIDEBAR
 # ─────────────────────────────────────────────
