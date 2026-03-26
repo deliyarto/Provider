@@ -262,8 +262,8 @@ with st.sidebar:
     st.markdown("### 🏥 Managed Care Pertamedika IHC")
     st.markdown("---")
     st.markdown("**Bantuan**")
-    st.markdown("📞 Call Center: **1500-123**")
-    st.markdown("✉️ cs@medicare-ins.co.id")
+    st.markdown("📞 Call Center: **0815 1444 1011 & 0815 1188 1011**")
+    st.markdown("✉️ mppk@ihc.id")
     st.markdown("---")
     st.caption("v1.0.0 © 2025 Managed Care Pertamedika IHC")
 
