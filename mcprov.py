@@ -220,7 +220,9 @@ def load_data():
     # 1. Selalu fetch dari GitHub (update otomatis saat CSV di-commit)
     try:
         import urllib.request
-        with urllib.request.urlopen(GITHUB_CSV_URL, timeout=1) as response:
+        import time
+        url = GITHUB_CSV_URL + f"?t={int(time.time())}"
+        with urllib.request.urlopen(url, timeout=10) as response:
             raw = response.read()
         for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
             try:
