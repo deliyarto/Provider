@@ -216,7 +216,7 @@ DATA_RS_DEFAULT = [
 # ─────────────────────────────────────────────
 # FUNGSI LOAD DATA — prioritas: GitHub → lokal → hardcode
 # ─────────────────────────────────────────────
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=0)
 def load_data():
     # 1. Coba ambil dari GitHub (selalu up-to-date)
     try:
