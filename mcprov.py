@@ -217,6 +217,24 @@ DATA_RS_DEFAULT = [
 # FUNGSI LOAD DATA — prioritas: GitHub → lokal → hardcode
 # ─────────────────────────────────────────────
 def load_data():
+    # 1. Selalu fetch dari GitHub (update otomatis saat CSV di-commit)
+    try:
+        import urllib.request
+        with urllib.request.urlopen(GITHUB_CSV_URL, timeout=10) as response:
+            raw = response.read()
+        for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
+            try:
+                df = pd.read_csv(io.BytesIO(raw), encoding=enc)
+                for col in TEMPLATE_COLS:
+                    if col not in df.columns:
+                        df[col] = "-"
+                return df
+            except (UnicodeDecodeError, Exception):
+                continue
+    except Exception:
+        pass
+
+    # 2. Fallback: baca CSV lokal (hasil upload Admin Panel)
     if os.path.exists(CSV_PATH):
         try:
             df = pd.read_csv(CSV_PATH)
@@ -226,7 +244,8 @@ def load_data():
             return df
         except Exception:
             pass
-    return None  # CSV tidak ada / gagal dibaca
+
+    return None  # tidak ada data sama sekali
 
 def refresh_data():
     pass
