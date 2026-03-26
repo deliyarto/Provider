@@ -216,26 +216,8 @@ DATA_RS_DEFAULT = [
 # ─────────────────────────────────────────────
 # FUNGSI LOAD DATA — prioritas: GitHub → lokal → hardcode
 # ─────────────────────────────────────────────
-@st.cache_data(ttl=0)
 def load_data():
-    # 1. Coba ambil dari GitHub (selalu up-to-date)
-    try:
-        import urllib.request
-        with urllib.request.urlopen(GITHUB_CSV_URL, timeout=10) as response:
-            raw = response.read()
-        for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
-            try:
-                df = pd.read_csv(io.BytesIO(raw), encoding=enc)
-                for col in TEMPLATE_COLS:
-                    if col not in df.columns:
-                        df[col] = "-"
-                return df
-            except (UnicodeDecodeError, Exception):
-                continue
-    except Exception:
-        pass
-
-    # 2. Fallback: baca dari file lokal
+    # 1. Baca dari file CSV lokal (hasil upload Admin Panel)
     if os.path.exists(CSV_PATH):
         try:
             df = pd.read_csv(CSV_PATH)
@@ -246,11 +228,11 @@ def load_data():
         except Exception:
             pass
 
-    # 3. Fallback terakhir: data hardcode
+    # 2. Fallback: data hardcode
     return pd.DataFrame(DATA_RS_DEFAULT)
 
 def refresh_data():
-    st.cache_data.clear()
+    pass  # tidak diperlukan karena tidak ada cache
 
 # ─────────────────────────────────────────────
 # SIDEBAR
