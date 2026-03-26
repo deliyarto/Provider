@@ -143,13 +143,14 @@ st.markdown("""
     .badge-d { background: #fee2e2; color: #b91c1c; }
     .badge-utama { background: #f3e8ff; color: #7c3aed; }
 
-    .admin-box {
-        background: #fff7ed;
-        border: 1px solid #fed7aa;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-top: 8px;
-    }
+    # # ── ADMIN PANEL CSS (dinonaktifkan) ──────────
+    # .admin-box {
+    #     background: #fff7ed;
+    #     border: 1px solid #fed7aa;
+    #     border-radius: 12px;
+    #     padding: 20px 24px;
+    #     margin-top: 8px;
+    # }
 
     .no-result {
         text-align: center;
@@ -248,10 +249,12 @@ def load_data():
         except Exception:
             pass
 
-    return None  # tidak ada data sama sekali
+    # 3. Fallback terakhir: data hardcode
+    return pd.DataFrame(DATA_RS_DEFAULT)
 
 def refresh_data():
-    pass
+    st.cache_data.clear()
+
 # ─────────────────────────────────────────────
 # SIDEBAR
 # ─────────────────────────────────────────────
@@ -317,7 +320,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# STATS — hanya tampil jika data ada
+# STATS
 # ─────────────────────────────────────────────
 if df is not None:
     total_rs = len(df)
@@ -338,16 +341,22 @@ if df is not None:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# NAVIGASI TABS
+# NAVIGASI TABS — Admin Panel dinonaktifkan
+# Untuk mengaktifkan kembali:
+#   1. Ganti baris berikut:
+#      tab2, tab1 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit"])
+#   2. Dengan:
+#      tab2, tab1, tab3 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit", "⚙️ Admin Panel"])
+#   3. Lalu uncomment blok "TAB 3: ADMIN PANEL" di bawah
 # ─────────────────────────────────────────────
-tab2, tab1, tab3 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit", "⚙️ Admin Panel"])
+tab2, tab1 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit"])
 
 # ─────────────────────────────────────────────
 # TAB 1: CARI RUMAH SAKIT
 # ─────────────────────────────────────────────
 with tab1:
     if df is None:
-        st.warning("⚠️ Data rumah sakit belum tersedia. Silakan upload file CSV melalui tab **⚙️ Admin Panel**.")
+        st.warning("⚠️ Data rumah sakit belum tersedia.")
     else:
         st.markdown('<div class="search-container">', unsafe_allow_html=True)
         st.markdown('<div class="search-title">🔎 Cari Rumah Sakit</div>', unsafe_allow_html=True)
@@ -384,7 +393,7 @@ with tab1:
 # ─────────────────────────────────────────────
 with tab2:
     if df is None:
-        st.warning("⚠️ Data rumah sakit belum tersedia. Silakan upload file CSV melalui tab **⚙️ Admin Panel**.")
+        st.warning("⚠️ Data rumah sakit belum tersedia.")
     else:
         st.subheader("📋 Daftar Semua Rumah Sakit Rekanan")
         st.dataframe(
@@ -409,108 +418,107 @@ with tab2:
             mime="text/csv",
         )
 
-# ─────────────────────────────────────────────
-# TAB 3: ADMIN PANEL
-# ─────────────────────────────────────────────
-with tab3:
-    st.subheader("⚙️ Admin Panel — Update Data Rumah Sakit")
+# ═════════════════════════════════════════════
+# TAB 3: ADMIN PANEL — DINONAKTIFKAN
+# Untuk mengaktifkan: uncomment semua baris di bawah ini (hapus tanda #)
+# ═════════════════════════════════════════════
 
-    if "admin_logged_in" not in st.session_state:
-        st.session_state.admin_logged_in = False
-
-    if not st.session_state.admin_logged_in:
-        st.markdown('<div class="admin-box">', unsafe_allow_html=True)
-        st.markdown("🔐 **Login Admin**")
-        pwd = st.text_input("Password Admin", type="password")
-        if st.button("Login"):
-            try:
-                admin_password = st.secrets["ADMIN_PASSWORD"]
-            except:
-                admin_password = "admin123"
-            if pwd == admin_password:
-                st.session_state.admin_logged_in = True
-                st.rerun()
-            else:
-                st.error("Password salah!")
-        st.markdown('</div>', unsafe_allow_html=True)
-    else:
-        st.success("✅ Anda login sebagai Admin")
-        if st.button("Logout"):
-            st.session_state.admin_logged_in = False
-            st.rerun()
-
-        # Status data saat ini
-        st.markdown("---")
-        if df is None:
-            st.error("❌ Belum ada data — pastikan file CSV ada di GitHub atau upload manual.")
-        else:
-            st.info(f"📊 Data aktif: **{len(df)} rumah sakit**")
-            st.caption(f"🔗 Sumber utama: `{GITHUB_CSV_URL}`")
-            st.caption(f"💾 Fallback lokal: `{CSV_PATH}`")
-
-        st.markdown("### 📤 Upload File CSV Baru")
-        st.info("""
-        **Format CSV yang dibutuhkan:**
-        Kolom wajib: `nama_rs`, `kota`, `provinsi`, `kelas`, `tipe`, `alamat`, `telepon`, `jam_operasional`
-
-        Download template di bawah untuk memulai.
-        """)
-
-        # Template CSV kosong dengan 1 baris contoh
-        template_data = [{
-            "nama_rs": "RS Contoh",
-            "kota": "Jakarta Pusat",
-            "provinsi": "DKI Jakarta",
-            "kelas": "A",
-            "tipe": "Pemerintah",
-            "alamat": "Jl. Contoh No.1",
-            "telepon": "(021) 000000",
-            "jam_operasional": "24 Jam"
-        }]
-        template_csv = pd.DataFrame(template_data).to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="⬇️ Download Template CSV",
-            data=template_csv,
-            file_name="template_data_rs.csv",
-            mime="text/csv",
-        )
-
-        uploaded = st.file_uploader("Upload file CSV baru:", type=["csv"])
-        if uploaded:
-            try:
-                raw = uploaded.read()
-                new_df = None
-                for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
-                    try:
-                        new_df = pd.read_csv(io.BytesIO(raw), encoding=enc)
-                        break
-                    except (UnicodeDecodeError, Exception):
-                        continue
-                if new_df is None:
-                    st.error("❌ File tidak bisa dibaca. Pastikan file CSV valid.")
-                else:
-                    required = ["nama_rs", "kota", "provinsi", "kelas", "tipe"]
-                    missing = [c for c in required if c not in new_df.columns]
-                    if missing:
-                        st.error(f"❌ Kolom wajib tidak ditemukan: {', '.join(missing)}")
-                    else:
-                        st.success(f"✅ File valid — {len(new_df)} data RS ditemukan")
-                        st.dataframe(new_df.head(5), use_container_width=True)
-                        if st.button("💾 Simpan & Terapkan Data Baru", type="primary"):
-                            new_df.to_csv(CSV_PATH, index=False, encoding="utf-8")
-                            refresh_data()
-                            st.success(f"✅ Data berhasil diperbarui! {len(new_df)} RS tersimpan.")
-                            st.rerun()
-            except Exception as e:
-                st.error(f"Error membaca file: {e}")
-
-        if df is not None:
-            st.markdown("---")
-            st.markdown("### 🗑️ Hapus Data")
-            st.warning("Menghapus data akan mengosongkan direktori RS hingga CSV baru diupload.")
-            if st.button("🗑️ Hapus Semua Data RS", type="secondary"):
-                if os.path.exists(CSV_PATH):
-                    os.remove(CSV_PATH)
-                refresh_data()
-                st.success("✅ Data berhasil dihapus.")
-                st.rerun()
+# with tab3:
+#     st.subheader("⚙️ Admin Panel — Update Data Rumah Sakit")
+#
+#     if "admin_logged_in" not in st.session_state:
+#         st.session_state.admin_logged_in = False
+#
+#     if not st.session_state.admin_logged_in:
+#         st.markdown('<div class="admin-box">', unsafe_allow_html=True)
+#         st.markdown("🔐 **Login Admin**")
+#         pwd = st.text_input("Password Admin", type="password")
+#         if st.button("Login"):
+#             try:
+#                 admin_password = st.secrets["ADMIN_PASSWORD"]
+#             except:
+#                 admin_password = "admin123"
+#             if pwd == admin_password:
+#                 st.session_state.admin_logged_in = True
+#                 st.rerun()
+#             else:
+#                 st.error("Password salah!")
+#         st.markdown('</div>', unsafe_allow_html=True)
+#     else:
+#         st.success("✅ Anda login sebagai Admin")
+#         if st.button("Logout"):
+#             st.session_state.admin_logged_in = False
+#             st.rerun()
+#
+#         st.markdown("---")
+#         if df is None:
+#             st.error("❌ Belum ada data — pastikan file CSV ada di GitHub atau upload manual.")
+#         else:
+#             st.info(f"📊 Data aktif: **{len(df)} rumah sakit**")
+#             st.caption(f"🔗 Sumber utama: `{GITHUB_CSV_URL}`")
+#             st.caption(f"💾 Fallback lokal: `{CSV_PATH}`")
+#
+#         st.markdown("### 📤 Upload File CSV Baru")
+#         st.info("""
+#         **Format CSV yang dibutuhkan:**
+#         Kolom wajib: `nama_rs`, `kota`, `provinsi`, `kelas`, `tipe`, `alamat`, `telepon`, `jam_operasional`
+#         Download template di bawah untuk memulai.
+#         """)
+#
+#         template_data = [{
+#             "nama_rs": "RS Contoh",
+#             "kota": "Jakarta Pusat",
+#             "provinsi": "DKI Jakarta",
+#             "kelas": "A",
+#             "tipe": "Pemerintah",
+#             "alamat": "Jl. Contoh No.1",
+#             "telepon": "(021) 000000",
+#             "jam_operasional": "24 Jam"
+#         }]
+#         template_csv = pd.DataFrame(template_data).to_csv(index=False).encode("utf-8")
+#         st.download_button(
+#             label="⬇️ Download Template CSV",
+#             data=template_csv,
+#             file_name="template_data_rs.csv",
+#             mime="text/csv",
+#         )
+#
+#         uploaded = st.file_uploader("Upload file CSV baru:", type=["csv"])
+#         if uploaded:
+#             try:
+#                 raw = uploaded.read()
+#                 new_df = None
+#                 for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
+#                     try:
+#                         new_df = pd.read_csv(io.BytesIO(raw), encoding=enc)
+#                         break
+#                     except (UnicodeDecodeError, Exception):
+#                         continue
+#                 if new_df is None:
+#                     st.error("❌ File tidak bisa dibaca. Pastikan file CSV valid.")
+#                 else:
+#                     required = ["nama_rs", "kota", "provinsi", "kelas", "tipe"]
+#                     missing = [c for c in required if c not in new_df.columns]
+#                     if missing:
+#                         st.error(f"❌ Kolom wajib tidak ditemukan: {', '.join(missing)}")
+#                     else:
+#                         st.success(f"✅ File valid — {len(new_df)} data RS ditemukan")
+#                         st.dataframe(new_df.head(5), use_container_width=True)
+#                         if st.button("💾 Simpan & Terapkan Data Baru", type="primary"):
+#                             new_df.to_csv(CSV_PATH, index=False, encoding="utf-8")
+#                             refresh_data()
+#                             st.success(f"✅ Data berhasil diperbarui! {len(new_df)} RS tersimpan.")
+#                             st.rerun()
+#             except Exception as e:
+#                 st.error(f"Error membaca file: {e}")
+#
+#         if df is not None:
+#             st.markdown("---")
+#             st.markdown("### 🗑️ Hapus Data")
+#             st.warning("Menghapus data akan mengosongkan direktori RS hingga CSV baru diupload.")
+#             if st.button("🗑️ Hapus Semua Data RS", type="secondary"):
+#                 if os.path.exists(CSV_PATH):
+#                     os.remove(CSV_PATH)
+#                 refresh_data()
+#                 st.success("✅ Data berhasil dihapus.")
+#                 st.rerun()
