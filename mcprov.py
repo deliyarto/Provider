@@ -424,7 +424,7 @@ with tab2:
                 "nama_rs": "Nama RS",
                 "kota": "Kota",
                 "provinsi": "Provinsi",
-                "kelas": "Kelas",
+              # TAB 1: CARI RUMAH SAKIT  "kelas": "Kelas",
                 "tipe": "Tipe",
                 "telepon": "Telepon",
                 "jam_operasional": "Jam Operasional",
