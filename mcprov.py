@@ -179,7 +179,7 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # KOLOM TEMPLATE CSV
 # ─────────────────────────────────────────────
-TEMPLATE_COLS = ["nama_rs", "kota", "provinsi",  "tipe", "alamat", "telepon", "jam_operasional"]
+TEMPLATE_COLS = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "telepon", "jam_operasional"]
 CSV_PATH = "template_data_rs.csv"
 
 # ⬇️ Ganti dengan URL raw GitHub CSV Anda
@@ -420,11 +420,10 @@ with tab2:
 
         st.subheader("📋 Daftar Semua Rumah Sakit Rekanan")
         st.dataframe(
-            df[["nama_rs", "kota", "provinsi", "kelas", "tipe", "telepon", "jam_operasional"]].rename(columns={
+            df[["nama_rs", "kota", "provinsi", "tipe", "telepon", "jam_operasional"]].rename(columns={
                 "nama_rs": "Nama RS",
                 "kota": "Kota",
                 "provinsi": "Provinsi",
-              # TAB 1: CARI RUMAH SAKIT  "kelas": "Kelas",
                 "tipe": "Tipe",
                 "telepon": "Telepon",
                 "jam_operasional": "Jam Operasional",
