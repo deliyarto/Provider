@@ -143,14 +143,17 @@ st.markdown("""
     .badge-d { background: #fee2e2; color: #b91c1c; }
     .badge-utama { background: #f3e8ff; color: #7c3aed; }
 
-    # # ── ADMIN PANEL CSS (dinonaktifkan) ──────────
-    # .admin-box {
-    #     background: #fff7ed;
-    #     border: 1px solid #fed7aa;
-    #     border-radius: 12px;
-    #     padding: 20px 24px;
-    #     margin-top: 8px;
-    # }
+    .disclaimer-box {
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        border-left: 4px solid #f59e0b;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        font-size: 0.83rem;
+        color: #78350f;
+        line-height: 1.6;
+    }
 
     .no-result {
         text-align: center;
@@ -341,13 +344,7 @@ if df is not None:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# NAVIGASI TABS — Admin Panel dinonaktifkan
-# Untuk mengaktifkan kembali:
-#   1. Ganti baris berikut:
-#      tab2, tab1 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit"])
-#   2. Dengan:
-#      tab2, tab1, tab3 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit", "⚙️ Admin Panel"])
-#   3. Lalu uncomment blok "TAB 3: ADMIN PANEL" di bawah
+# NAVIGASI TABS
 # ─────────────────────────────────────────────
 tab2, tab1 = st.tabs(["📋 Semua RS", "🔍 Cari Rumah Sakit"])
 
@@ -358,6 +355,19 @@ with tab1:
     if df is None:
         st.warning("⚠️ Data rumah sakit belum tersedia.")
     else:
+        # ── DISCLAIMER ──────────────────────────────
+        st.markdown("""
+        <div class="disclaimer-box">
+            ⚠️ <strong>Disclaimer:</strong>
+            Kelas rumah sakit yang tercantum dalam direktori ini bersifat informatif dan dapat berubah
+            sewaktu-waktu sesuai dengan hasil penilaian akreditasi dan penetapan kelas oleh
+            <strong>Kementerian Kesehatan Republik Indonesia</strong>.
+            Managed Care Pertamedika IHC tidak bertanggung jawab atas perubahan kelas RS yang belum
+            diperbarui dalam sistem ini. Untuk informasi terkini, silakan hubungi Call Center kami
+            atau kunjungi situs resmi Kemenkes RI.
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown('<div class="search-container">', unsafe_allow_html=True)
         st.markdown('<div class="search-title">🔎 Cari Rumah Sakit</div>', unsafe_allow_html=True)
         keyword = st.text_input(
@@ -395,6 +405,19 @@ with tab2:
     if df is None:
         st.warning("⚠️ Data rumah sakit belum tersedia.")
     else:
+        # ── DISCLAIMER ──────────────────────────────
+        st.markdown("""
+        <div class="disclaimer-box">
+            ⚠️ <strong>Disclaimer:</strong>
+            Kelas rumah sakit yang tercantum dalam direktori ini bersifat informatif dan dapat berubah
+            sewaktu-waktu sesuai dengan hasil penilaian akreditasi dan penetapan kelas oleh
+            <strong>Kementerian Kesehatan Republik Indonesia</strong>.
+            Managed Care Pertamedika IHC tidak bertanggung jawab atas perubahan kelas RS yang belum
+            diperbarui dalam sistem ini. Untuk informasi terkini, silakan hubungi Call Center kami
+            atau kunjungi situs resmi Kemenkes RI.
+        </div>
+        """, unsafe_allow_html=True)
+
         st.subheader("📋 Daftar Semua Rumah Sakit Rekanan")
         st.dataframe(
             df[["nama_rs", "kota", "provinsi", "kelas", "tipe", "telepon", "jam_operasional"]].rename(columns={
