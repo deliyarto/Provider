@@ -1,5 +1,6 @@
 # 🏥 Direktori RS Rekanan — Managed Care Pertamedika IHC
 
+==claude user tapahadi respati brave broser
 Aplikasi Streamlit untuk mencari daftar rumah sakit rekanan asuransi, lengkap dengan fitur admin untuk update data via CSV.
 
 ## ✨ Fitur
