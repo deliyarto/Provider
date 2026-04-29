@@ -179,7 +179,7 @@ st.markdown("""
 # ─────────────────────────────────────────────
 # KOLOM TEMPLATE CSV
 # ─────────────────────────────────────────────
-TEMPLATE_COLS = ["nama_rs", "kota", "provinsi", "kelas", "tipe", "alamat", "telepon", "jam_operasional"]
+TEMPLATE_COLS = ["nama_rs", "kota", "provinsi",  "tipe", "alamat", "telepon", "jam_operasional"]
 CSV_PATH = "template_data_rs.csv"
 
 # ⬇️ Ganti dengan URL raw GitHub CSV Anda
