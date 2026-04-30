@@ -363,8 +363,10 @@ with tab1:
             sewaktu-waktu sesuai dengan hasil penilaian akreditasi dan penetapan kelas oleh
             <strong>Kementerian Kesehatan Republik Indonesia</strong>.
             Managed Care Pertamedika IHC tidak bertanggung jawab atas perubahan kelas RS yang belum
-            diperbarui dalam sistem ini. Untuk informasi terkini, silakan hubungi Call Center kami
-            atau kunjungi situs resmi Kemenkes RI.
+            diperbarui dalam sistem ini. Untuk informasi kelas RS terkini, silakan kunjungi
+            <a href="https://sirs.kemkes.go.id/fo/home/dashboard_rs?id=0" target="_blank" style="color:#92400e; font-weight:600; text-decoration:underline;">
+            Sistem Informasi Rumah Sakit (SIRS) Kemenkes RI</a>
+            atau hubungi Call Center kami.
         </div>
         """, unsafe_allow_html=True)
 
@@ -413,8 +415,10 @@ with tab2:
             sewaktu-waktu sesuai dengan hasil penilaian akreditasi dan penetapan kelas oleh
             <strong>Kementerian Kesehatan Republik Indonesia</strong>.
             Managed Care Pertamedika IHC tidak bertanggung jawab atas perubahan kelas RS yang belum
-            diperbarui dalam sistem ini. Untuk informasi terkini, silakan hubungi Call Center kami
-            atau kunjungi situs resmi Kemenkes RI.
+            diperbarui dalam sistem ini. Untuk informasi kelas RS terkini, silakan kunjungi
+            <a href="https://sirs.kemkes.go.id/fo/home/dashboard_rs?id=0" target="_blank" style="color:#92400e; font-weight:600; text-decoration:underline;">
+            Sistem Informasi Rumah Sakit (SIRS) Kemenkes RI</a>
+            atau hubungi Call Center kami.
         </div>
         """, unsafe_allow_html=True)
 
